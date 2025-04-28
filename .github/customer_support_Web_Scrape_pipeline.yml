@@ -1,0 +1,38 @@
+name: Customer Support Web Scrape ETL
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 * * * *' # (optional) Every hour at 30 mins
+
+jobs:
+  etl_scrape:
+    runs-on: ubuntu-latest
+    env:
+      MYSQL_USER: ${{ secrets.MYSQL_USER }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+      MYSQL_DB: ${{ secrets.MYSQL_DB }}
+      PG_USER: ${{ secrets.PG_USER }}
+      PG_PASSWORD: ${{ secrets.PG_PASSWORD }}
+      PG_HOST: ${{ secrets.PG_HOST }}
+      PG_DB: ${{ secrets.PG_DB }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install nbconvert
+
+      - name: Run Web Scrape ETL Jupyter Notebook
+        run: |
+          jupyter nbconvert --to script notebooks/customer_support_Web_Scrape_Extract_Load_Raw.ipynb
+          python notebooks/customer_support_Web_Scrape_Extract_Load_Raw.py
